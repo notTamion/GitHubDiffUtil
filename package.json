@@ -1,0 +1,15 @@
+{
+  "name": "github-diff-util",
+  "version": "1.0.0",
+  "description": "An Util Extension for working with GitHub diffs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Tamion",
+  "license": "MIT",
+  "dependencies": {
+    "chrome-types": "^0.1.332"
+  }
+}

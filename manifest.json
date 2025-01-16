@@ -1,0 +1,14 @@
+{
+  "name": "GitHub Diff Util",
+  "description": "An Util Extension for working with GitHub diffs",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "content_scripts": [
+    {
+      "js": ["scripts/patch.js"],
+      "matches": [
+        "https://github.com/*"
+      ]
+    }
+  ]
+}
