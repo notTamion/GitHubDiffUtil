@@ -58,7 +58,9 @@ if (document.getElementById("diff-content-parent")) {
                     }
                 } else if (outerMarker.textContent === '+') { // +, ?
                     if (innerMarker === '-') { // +, -
-                        possiblePostpones.push(diffLine);
+                        if (nextMayPostponed) {
+                            possiblePostpones.push(diffLine);
+                        }
                         outerMarker.textContent = '-';
                         diffCode.classList.remove('addition');
                         diffCode.classList.add('deletion');
