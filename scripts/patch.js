@@ -1,3 +1,4 @@
+const diffBg = 'var(--diffBlob-kindLocation-bgColor, var(--diffBlob-kind-bgColor-location))'
 if (document.getElementById("diff-content-parent")) {
     let diffFiles = document.querySelectorAll('div.position-relative:has(> div > div > div > h3 > a > code)');
 
@@ -7,65 +8,61 @@ if (document.getElementById("diff-content-parent")) {
             let diffLines = diffFile.querySelectorAll('div > table > tbody > tr');
 
             for (let j = 0; j < diffLines.length; j++) {
-                let diffLine = diffLines[j];
-                let diffColumns = diffLine.querySelectorAll('td');
-                let diffCode = diffLine.querySelector('td > code:has(div.diff-text-inner)');
+                let diffLine = diffLines[j]; // direct table child
+                let diffColumns = diffLine.querySelectorAll('td'); // removed line, added line, diff content
+                let diffCode = diffLine.querySelector('td > code:has(div.diff-text-inner)'); // patch content code element (contains most of actual diff content
                 if (!diffCode) {
                     continue;
                 }
                 let diffText = diffCode.querySelector('div.diff-text-inner');
-                let diffTextMarker = diffCode.querySelector('span.diff-text-marker');
-                let outerMarker = '';
-                if (diffTextMarker) {
-                    outerMarker = diffTextMarker.textContent;
-                }
+                let outerMarker = diffCode.querySelector('span.diff-text-marker');
+                let innerMarker = diffText.textContent.charAt(0)
 
-                // Remove first character and remove highlighting for Lines that are part of the patch surrounding the actual diff
-                if (diffText.firstChild && diffText.textContent.startsWith(" ")) {
-                    for (let k = 0; k < diffColumns.length; k++) {
-                        let diffColumn = diffColumns[k];
-                        diffColumn.style.backgroundColor = '';
+                if (!outerMarker) { // _, ?
+                    if (innerMarker === '-') { // _, -
+                        diffLine.remove()
+                    } else if (innerMarker === '+' || innerMarker === ' ') { // _, +/_
+                        diffText.textContent = diffText.textContent.slice(1);
                     }
-                    diffCode.classList.remove('addition');
-                    diffCode.classList.remove('deletion');
-                    let marker = diffCode.querySelector('.diff-text-marker')
-                    if (marker) {
-                        marker.remove();
-                    }
-                    diffText.textContent = diffText.textContent.slice(1)
-                }
-
-                let changeDiffMarker = diffCode.querySelector('div.diff-text-inner > span');
-                let innerMarker = '';
-                if (changeDiffMarker) {
-                    innerMarker = changeDiffMarker.textContent.charAt(0);
-                    console.log(innerMarker)
-                    if (innerMarker !== '+' && innerMarker !== '-') {
-                        continue;
-                    }
-                    diffText.textContent = changeDiffMarker.textContent.slice(1);
-                    if (outerMarker === innerMarker) {
-                        if (!diffCode.classList.contains('addition')) {
-                            diffCode.classList.remove('deletion');
-                            diffCode.classList.add('addition');
-                            for (let k = 0; k < diffColumns.length; k++) {
-                                let diffColumn = diffColumns[k];
-                                diffColumn.style.backgroundColor = diffColumn.style.backgroundColor.replaceAll("deletion", "addition");
+                } else if (outerMarker.textContent === '-') { // -, ?
+                    if (innerMarker === '-') { // -, -
+                        outerMarker.textContent = '+';
+                        diffCode.classList.remove('deletion');
+                        diffCode.classList.add('addition');
+                        for (let k = 0; k < diffColumns.length; k++) {
+                            if (k === 2) {
+                                diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'addition').replace('location', 'line').replace('Location', 'Line');
+                            } else {
+                                diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'addition').replace('location', 'num').replace('Location', 'num');
                             }
                         }
-                    } else {
-                        if (!diffCode.classList.contains('deletion')) {
-                            diffCode.classList.remove('addition');
-                            diffCode.classList.add('deletion');
-                            for (let k = 0; k < diffColumns.length; k++) {
-                                let diffColumn = diffColumns[k];
-                                diffColumn.style.backgroundColor = diffColumn.style.backgroundColor.replaceAll("addition", "deletion");
+                    } else if (innerMarker === '+' || innerMarker === ' ') { // -, +/_
+                        diffLine.remove();
+                    }
+                } else if (outerMarker.textContent === '+') { // +, ?
+                    if (innerMarker === '-') { // +, -
+                        outerMarker.textContent = '-';
+                        diffCode.classList.remove('addition');
+                        diffCode.classList.add('deletion');
+                        diffText.textContent = diffText.textContent.slice(1);
+                        for (let k = 0; k < diffColumns.length; k++) {
+                            if (k === 2) {
+                                diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'deletion').replace('location', 'line').replace('Location', 'Line');
+                            } else {
+                                diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'deletion').replace('location', 'num').replace('Location', 'Num');
                             }
                         }
-
+                    } else if (innerMarker === '+') { // +, +
+                        diffText.textContent = diffText.textContent.slice(1);
+                    } else if (innerMarker === ' ') { // +, _
+                        outerMarker.remove()
+                        diffCode.classList.remove('addition');
+                        diffText.textContent = diffText.textContent.slice(1);
+                        for (let k = 0; k < diffColumns.length; k++) {
+                            diffColumns[k].style.backgroundColor = '';
+                        }
                     }
                 }
-
             }
         }
     }
