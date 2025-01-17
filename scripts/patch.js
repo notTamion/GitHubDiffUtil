@@ -29,6 +29,7 @@ if (document.getElementById("diff-content-parent")) {
                         outerMarker.textContent = '+';
                         diffCode.classList.remove('deletion');
                         diffCode.classList.add('addition');
+                        diffText.textContent = diffText.textContent.slice(1);
                         for (let k = 0; k < diffColumns.length; k++) {
                             if (k === 2) {
                                 diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'addition').replace('location', 'line').replace('Location', 'Line');
@@ -36,7 +37,9 @@ if (document.getElementById("diff-content-parent")) {
                                 diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'addition').replace('location', 'num').replace('Location', 'num');
                             }
                         }
-                    } else if (innerMarker === '+' || innerMarker === ' ') { // -, +/_
+                    } else if (innerMarker === '+') { // -, +
+                        diffText.textContent = diffText.textContent.slice(1);
+                    } else if (innerMarker === ' ') { // -, _
                         diffLine.remove();
                     }
                 } else if (outerMarker.textContent === '+') { // +, ?
