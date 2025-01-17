@@ -7,6 +7,8 @@ if (document.getElementById("diff-content-parent")) {
         if (diffFile.querySelector('div > div > div > h3 > a > code').lastChild.textContent.endsWith(".patch")) {
             let diffLines = diffFile.querySelectorAll('div > table > tbody > tr');
 
+            let nextMayPostponed = false;
+            let possiblePostpones = [];
             for (let j = 0; j < diffLines.length; j++) {
                 let diffLine = diffLines[j]; // direct table child
                 let diffColumns = diffLine.querySelectorAll('td'); // removed line, added line, diff content
@@ -20,12 +22,20 @@ if (document.getElementById("diff-content-parent")) {
 
                 if (!outerMarker) { // _, ?
                     if (innerMarker === '-') { // _, -
+                        possiblePostpones = [];
+                        nextMayPostponed = true;
                         diffLine.remove()
-                    } else if (innerMarker === '+' || innerMarker === ' ') { // _, +/_
+                    } else if (innerMarker === '+') { // _, +
+                        nextMayPostponed = false;
+                        diffText.textContent = diffText.textContent.slice(1);
+                    } else if (innerMarker === ' ') { // _, _
+                        possiblePostpones = [];
+                        nextMayPostponed = false;
                         diffText.textContent = diffText.textContent.slice(1);
                     }
                 } else if (outerMarker.textContent === '-') { // -, ?
                     if (innerMarker === '-') { // -, -
+                        possiblePostpones = [];
                         outerMarker.textContent = '+';
                         diffCode.classList.remove('deletion');
                         diffCode.classList.add('addition');
@@ -40,10 +50,15 @@ if (document.getElementById("diff-content-parent")) {
                     } else if (innerMarker === '+') { // -, +
                         diffText.textContent = diffText.textContent.slice(1);
                     } else if (innerMarker === ' ') { // -, _
+                        for (let elem of possiblePostpones) {
+                            diffLine.parentElement.insertBefore(elem, diffLine);
+                        }
+                        possiblePostpones = []
                         diffLine.remove();
                     }
                 } else if (outerMarker.textContent === '+') { // +, ?
                     if (innerMarker === '-') { // +, -
+                        possiblePostpones.push(diffLine);
                         outerMarker.textContent = '-';
                         diffCode.classList.remove('addition');
                         diffCode.classList.add('deletion');
@@ -56,8 +71,11 @@ if (document.getElementById("diff-content-parent")) {
                             }
                         }
                     } else if (innerMarker === '+') { // +, +
+                        nextMayPostponed = false;
                         diffText.textContent = diffText.textContent.slice(1);
                     } else if (innerMarker === ' ') { // +, _
+                        possiblePostpones = [];
+                        nextMayPostponed = false;
                         outerMarker.remove()
                         diffCode.classList.remove('addition');
                         diffText.textContent = diffText.textContent.slice(1);
