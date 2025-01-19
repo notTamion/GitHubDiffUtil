@@ -34,7 +34,7 @@ document.addEventListener('keydown', function (e) {
                                 diffLine.remove()
                             } else if (innerMarker === '+') { // _, +
                                 nextMayPostponed = false;
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                             } else if (innerMarker === ' ') { // _, _
                                 possiblePostpones = [];
                                 nextMayPostponed = false;
@@ -46,7 +46,7 @@ document.addEventListener('keydown', function (e) {
                                 outerMarker.textContent = '+';
                                 diffCode.classList.remove('deletion');
                                 diffCode.classList.add('addition');
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                                 for (let k = 0; k < diffColumns.length; k++) {
                                     if (k === 2) {
                                         diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'addition').replace('location', 'line').replace('Location', 'Line');
@@ -55,7 +55,7 @@ document.addEventListener('keydown', function (e) {
                                     }
                                 }
                             } else if (innerMarker === '+') { // -, +
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                             } else if (innerMarker === ' ') { // -, _
                                 for (let elem of possiblePostpones) {
                                     diffLine.parentElement.insertBefore(elem, diffLine);
@@ -71,7 +71,7 @@ document.addEventListener('keydown', function (e) {
                                 outerMarker.textContent = '-';
                                 diffCode.classList.remove('addition');
                                 diffCode.classList.add('deletion');
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                                 for (let k = 0; k < diffColumns.length; k++) {
                                     if (k === 2) {
                                         diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'deletion').replace('location', 'line').replace('Location', 'Line');
@@ -81,7 +81,7 @@ document.addEventListener('keydown', function (e) {
                                 }
                             } else if (innerMarker === '+') { // +, +
                                 nextMayPostponed = false;
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                             } else if (innerMarker === ' ') { // +, _
                                 possiblePostpones = [];
                                 nextMayPostponed = false;
@@ -133,7 +133,7 @@ document.addEventListener('keydown', function (e) {
                                 diffLine.remove()
                             } else if (innerMarker === '+') { // _, +
                                 nextMayPostponed = false;
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                             } else if (innerMarker === ' ' || innerMarker === '') { // _, _
                                 possiblePostpones = [];
                                 nextMayPostponed = false;
@@ -145,12 +145,12 @@ document.addEventListener('keydown', function (e) {
                             if (innerMarker === '-') { // -, -
                                 possiblePostpones = [];
                                 diffText.setAttribute('data-code-marker', '+');
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                                 for (let k = 0; k < diffColumns.length; k++) {
                                     diffColumns[k].setAttribute('class', diffColumns[k].getAttribute('class').replaceAll('deletion', 'addition'))
                                 }
                             } else if (innerMarker === '+') { // -, +
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                             } else if (innerMarker === ' ' || innerMarker === '') { // -, _
                                 for (let elem of possiblePostpones) {
                                     diffLine.parentElement.insertBefore(elem, diffLine);
@@ -164,13 +164,13 @@ document.addEventListener('keydown', function (e) {
                                     possiblePostpones.push(diffLine);
                                 }
                                 diffText.setAttribute('data-code-marker', '-');
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                                 for (let k = 0; k < diffColumns.length; k++) {
                                     diffColumns[k].setAttribute('class', diffColumns[k].getAttribute('class').replaceAll('addition', 'deletion'))
                                 }
                             } else if (innerMarker === '+') { // +, +
                                 nextMayPostponed = false;
-                                collapseUp(diffText.firstElementChild);
+                                collapseUp(diffText);
                             } else if (innerMarker === ' ' || innerMarker === '') { // +, _
                                 possiblePostpones = [];
                                 nextMayPostponed = false;
@@ -191,10 +191,20 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
-function collapseUp(oldParent) {
-    let newParent = oldParent.parentElement;
-    newParent.innerHTML = oldParent.innerHTML
-    if (newParent.firstElementChild) {
-        newParent.firstElementChild.remove();
+function collapseUp(newParent) {
+    if (newParent.directText()) {
+        newParent.textContent = newParent.textContent.slice(1);
+    } else {
+        let oldParent = newParent.firstElementChild;
+        newParent.innerHTML = oldParent.innerHTML
+        if (newParent.firstElementChild) {
+            newParent.firstElementChild.remove()
+        }
     }
+}
+
+HTMLElement.prototype.directText=function (){
+    let el=this.cloneNode(true);
+    while (el.children[0]) el.children[0].remove();
+    return el.textContent;
 }
