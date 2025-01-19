@@ -51,7 +51,7 @@ document.addEventListener('keydown', function (e) {
                                     if (k === 2) {
                                         diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'addition').replace('location', 'line').replace('Location', 'Line');
                                     } else {
-                                        diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'addition').replace('location', 'num').replace('Location', 'num');
+                                        diffColumns[k].style.backgroundColor = diffBg.replaceAll('kind', 'addition').replace('location', 'num').replace('Location', 'Num');
                                     }
                                 }
                             } else if (innerMarker === '+') { // -, +
