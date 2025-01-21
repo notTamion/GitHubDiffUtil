@@ -10,8 +10,9 @@ document.addEventListener('keydown', function (e) {
                 if (diffFile.querySelector('div > div > div > h3 > a > code').lastChild.textContent.endsWith(".patch")) {
                     let diffLines = diffFile.querySelectorAll('div > table > tbody > tr');
 
-                    let nextMayPostponed = false;
-                    let possiblePostpones = [];
+                    let diffToPush = [];
+                    let isLastNegative = false;
+                    let isDroppingDiff = false;
                     for (let j = 0; j < diffLines.length; j++) {
                         let diffLine = diffLines[j]; // direct table child
                         if (diffLine.classList.contains('ghdu-processed')) {
@@ -28,21 +29,21 @@ document.addEventListener('keydown', function (e) {
                         let innerMarker = diffText.textContent.charAt(0)
 
                         if (!outerMarker) { // _, ?
+                            isDroppingDiff = false;
                             if (innerMarker === '-') { // _, -
-                                possiblePostpones = [];
-                                nextMayPostponed = true;
+                                diffToPush = [];
+                                isLastNegative = true;
                                 diffLine.remove()
                             } else if (innerMarker === '+') { // _, +
-                                nextMayPostponed = false;
+                                isLastNegative = false;
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ') { // _, _
-                                possiblePostpones = [];
-                                nextMayPostponed = false;
+                                diffToPush = [];
+                                isLastNegative = false;
                                 diffText.textContent = diffText.textContent.slice(1);
                             }
                         } else if (outerMarker.textContent === '-') { // -, ?
                             if (innerMarker === '-') { // -, -
-                                possiblePostpones = [];
                                 outerMarker.textContent = '+';
                                 diffCode.classList.remove('deletion');
                                 diffCode.classList.add('addition');
@@ -57,16 +58,30 @@ document.addEventListener('keydown', function (e) {
                             } else if (innerMarker === '+') { // -, +
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ') { // -, _
-                                for (let elem of possiblePostpones) {
-                                    diffLine.parentElement.insertBefore(elem, diffLine);
+                                for (let line of diffToPush) {
+                                    diffLine.parentElement.insertBefore(line, diffLine);
                                 }
-                                possiblePostpones = []
-                                diffLine.remove();
+                                diffToPush = [];
+
+                                if (!isDroppingDiff) {
+                                    diffLine.remove();
+                                } else {
+                                    outerMarker.remove()
+                                    diffCode.classList.remove('deletion');
+                                    diffText.textContent = diffText.textContent.slice(1);
+                                    for (let k = 0; k < diffColumns.length; k++) {
+                                        diffColumns[k].style.backgroundColor = '';
+                                    }
+                                }
+                            } else if (innerMarker === '@') {
+                                isDroppingDiff = true;
                             }
                         } else if (outerMarker.textContent === '+') { // +, ?
+                            isDroppingDiff = false;
                             if (innerMarker === '-') { // +, -
-                                if (nextMayPostponed) {
-                                    possiblePostpones.push(diffLine);
+                                diffToPush = [];
+                                if (isLastNegative) {
+                                    diffToPush.push(diffLine);
                                 }
                                 outerMarker.textContent = '-';
                                 diffCode.classList.remove('addition');
@@ -80,11 +95,11 @@ document.addEventListener('keydown', function (e) {
                                     }
                                 }
                             } else if (innerMarker === '+') { // +, +
-                                nextMayPostponed = false;
+                                isLastNegative = false;
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ') { // +, _
-                                possiblePostpones = [];
-                                nextMayPostponed = false;
+                                diffToPush = [];
+                                isLastNegative = false;
                                 outerMarker.remove()
                                 diffCode.classList.remove('addition');
                                 diffText.textContent = diffText.textContent.slice(1);
@@ -107,8 +122,9 @@ document.addEventListener('keydown', function (e) {
                         diffLines = diffFile.querySelectorAll('div > div.js-file-content > div.data > table > tbody > tr');
                     }
 
-                    let nextMayPostponed = false;
-                    let possiblePostpones = [];
+                    let diffToPush = [];
+                    let isLastNegative = false;
+                    let isDroppingDiff = false;
                     for (let j = 0; j < diffLines.length; j++) {
                         let diffLine = diffLines[j]; // direct table child
                         if (diffLine.classList.contains('ghdu-processed')) {
@@ -127,23 +143,21 @@ document.addEventListener('keydown', function (e) {
                         let innerMarker = diffText.textContent.charAt(0)
 
                         if (diffText.getAttribute('data-code-marker') === ' ') { // _, ?
+                            isDroppingDiff = false;
                             if (innerMarker === '-') { // _, -
-                                possiblePostpones = [];
-                                nextMayPostponed = true;
+                                isLastNegative = true;
                                 diffLine.remove()
                             } else if (innerMarker === '+') { // _, +
-                                nextMayPostponed = false;
+                                isLastNegative = false;
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ' || innerMarker === '') { // _, _
-                                possiblePostpones = [];
-                                nextMayPostponed = false;
+                                isLastNegative = false;
                                 if (diffText.firstElementChild) {
                                     diffText.firstElementChild.textContent = diffText.firstElementChild.textContent.slice(1);
                                 }
                             }
                         } else if (diffText.getAttribute('data-code-marker') === '-') { // -, ?
                             if (innerMarker === '-') { // -, -
-                                possiblePostpones = [];
                                 diffText.setAttribute('data-code-marker', '+');
                                 collapseUp(diffText);
                                 for (let k = 0; k < diffColumns.length; k++) {
@@ -152,16 +166,30 @@ document.addEventListener('keydown', function (e) {
                             } else if (innerMarker === '+') { // -, +
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ' || innerMarker === '') { // -, _
-                                for (let elem of possiblePostpones) {
-                                    diffLine.parentElement.insertBefore(elem, diffLine);
+                                for (let line of diffToPush) {
+                                    diffLine.parentElement.insertBefore(line, diffLine);
                                 }
-                                possiblePostpones = []
-                                diffLine.remove();
+                                diffToPush = [];
+                                if (!isDroppingDiff) {
+                                    diffLine.remove();
+                                } else {
+                                    diffText.setAttribute('data-code-marker', ' ');
+                                    if (diffText.firstElementChild) {
+                                        diffText.firstElementChild.textContent = diffText.firstElementChild.textContent.slice(1);
+                                    }
+                                    for (let k = 0; k < diffColumns.length; k++) {
+                                        diffColumns[k].setAttribute('class', diffColumns[k].getAttribute('class').replaceAll('deletion', 'context'))
+                                    }
+                                }
+
+                            } else if (innerMarker === '@') {
+                                isDroppingDiff = true;
                             }
                         } else if (diffText.getAttribute('data-code-marker') === '+') { // +, ?
+                            isDroppingDiff = false;
                             if (innerMarker === '-') { // +, -
-                                if (nextMayPostponed) {
-                                    possiblePostpones.push(diffLine);
+                                if (isLastNegative) {
+                                    diffToPush.push(diffLine);
                                 }
                                 diffText.setAttribute('data-code-marker', '-');
                                 collapseUp(diffText);
@@ -169,11 +197,10 @@ document.addEventListener('keydown', function (e) {
                                     diffColumns[k].setAttribute('class', diffColumns[k].getAttribute('class').replaceAll('addition', 'deletion'))
                                 }
                             } else if (innerMarker === '+') { // +, +
-                                nextMayPostponed = false;
+                                isLastNegative = false;
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ' || innerMarker === '') { // +, _
-                                possiblePostpones = [];
-                                nextMayPostponed = false;
+                                isLastNegative = false;
                                 diffText.setAttribute('data-code-marker', ' ');
                                 if (diffText.firstElementChild) {
                                     diffText.firstElementChild.textContent = diffText.firstElementChild.textContent.slice(1);
