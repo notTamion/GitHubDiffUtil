@@ -121,6 +121,9 @@ document.addEventListener('keydown', function (e) {
                     if (diffLines.length === 0) {
                         diffLines = diffFile.querySelectorAll('div > div.js-file-content > div.data > table > tbody > tr');
                     }
+                    if (diffLines.length === 0) {
+                        diffLines = diffFile.querySelectorAll('div > div.js-file-content > div.js-diff-load-container > div.data > table > tbody > tr');
+                    }
 
                     let diffToPush = [];
                     let isLastNegative = false;
