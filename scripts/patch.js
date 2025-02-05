@@ -233,11 +233,11 @@ function syntaxHighlight(content) {
 }
 
 function syntaxHighlightJava(content) {
-    content.innerHTML = content.innerHTML.replaceAll(/(abstract|assert|break|case|catch|class|continue|const|default|do|else|enum|exports|extends|final|finally|for|if|implements|import|instaceof|interface|module|native|new|package|private|protected|public|requires|return|static|super|switch|synchronized|throw|throws|transient|try|var|volatile|while)(?=[^a-zA-Z_$=])/gm, (match) => {
+    content.innerHTML = content.innerHTML.replaceAll(/(abstract|assert|break|case|catch|class|continue|const|default|do|else|enum|exports|extends|final|finally|for|if|implements|import|instaceof|interface|module|native|new|package|private|protected|public|requires|return|static|super|switch|synchronized|throw|throws|transient|try|var|volatile|while)(?=[^a-zA-Z_$=])/g, (match) => {
         return '<span class="pl-k">' + match + '</span>';
-    }).replaceAll(/([a-zA-Z]|\$)*(?=\()/gm, (match) => {
+    }).replaceAll(/([a-zA-Z]|\$)*(?=\()/g, (match) => {
         return '<span class="pl-en">' + match + '</span>';
-    }).replaceAll(/@[a-zA-Z]*/gm, (match) => {
+    }).replaceAll(/@[a-zA-Z]*/g, (match) => {
         return '<span class="pl-c1">' + match + '</span>';
     });
 }
