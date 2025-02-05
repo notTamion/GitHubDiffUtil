@@ -11,7 +11,6 @@ document.addEventListener('keydown', function (e) {
                     let diffLines = diffFile.querySelectorAll('div > table > tbody > tr');
 
                     let diffToPush = [];
-                    let isLastNegative = false;
                     let isDroppingDiff = false;
                     for (let j = 0; j < diffLines.length; j++) {
                         let diffLine = diffLines[j]; // direct table child
@@ -32,14 +31,11 @@ document.addEventListener('keydown', function (e) {
                             isDroppingDiff = false;
                             if (innerMarker === '-') { // _, -
                                 diffToPush = [];
-                                isLastNegative = true;
                                 diffLine.remove()
                             } else if (innerMarker === '+') { // _, +
-                                isLastNegative = false;
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ') { // _, _
                                 diffToPush = [];
-                                isLastNegative = false;
                                 diffText.textContent = diffText.textContent.slice(1);
                             }
                         } else if (outerMarker.textContent === '-') { // -, ?
@@ -79,10 +75,7 @@ document.addEventListener('keydown', function (e) {
                         } else if (outerMarker.textContent === '+') { // +, ?
                             isDroppingDiff = false;
                             if (innerMarker === '-') { // +, -
-                                diffToPush = [];
-                                if (isLastNegative) {
-                                    diffToPush.push(diffLine);
-                                }
+                                diffToPush.push(diffLine);
                                 outerMarker.textContent = '-';
                                 diffCode.classList.remove('addition');
                                 diffCode.classList.add('deletion');
@@ -95,11 +88,9 @@ document.addEventListener('keydown', function (e) {
                                     }
                                 }
                             } else if (innerMarker === '+') { // +, +
-                                isLastNegative = false;
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ') { // +, _
                                 diffToPush = [];
-                                isLastNegative = false;
                                 outerMarker.remove()
                                 diffCode.classList.remove('addition');
                                 diffText.textContent = diffText.textContent.slice(1);
@@ -126,7 +117,7 @@ document.addEventListener('keydown', function (e) {
                     }
 
                     let diffToPush = [];
-                    let isLastNegative = false;
+
                     let isDroppingDiff = false;
                     for (let j = 0; j < diffLines.length; j++) {
                         let diffLine = diffLines[j]; // direct table child
@@ -148,13 +139,12 @@ document.addEventListener('keydown', function (e) {
                         if (diffText.getAttribute('data-code-marker') === ' ') { // _, ?
                             isDroppingDiff = false;
                             if (innerMarker === '-') { // _, -
-                                isLastNegative = true;
+                                diffToPush = [];
                                 diffLine.remove()
                             } else if (innerMarker === '+') { // _, +
-                                isLastNegative = false;
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ' || innerMarker === '') { // _, _
-                                isLastNegative = false;
+                                diffToPush = [];
                                 if (diffText.firstElementChild) {
                                     diffText.firstElementChild.textContent = diffText.firstElementChild.textContent.slice(1);
                                 }
@@ -191,19 +181,16 @@ document.addEventListener('keydown', function (e) {
                         } else if (diffText.getAttribute('data-code-marker') === '+') { // +, ?
                             isDroppingDiff = false;
                             if (innerMarker === '-') { // +, -
-                                if (isLastNegative) {
-                                    diffToPush.push(diffLine);
-                                }
+                                diffToPush.push(diffLine);
                                 diffText.setAttribute('data-code-marker', '-');
                                 collapseUp(diffText);
                                 for (let k = 0; k < diffColumns.length; k++) {
                                     diffColumns[k].setAttribute('class', diffColumns[k].getAttribute('class').replaceAll('addition', 'deletion'))
                                 }
                             } else if (innerMarker === '+') { // +, +
-                                isLastNegative = false;
                                 collapseUp(diffText);
                             } else if (innerMarker === ' ' || innerMarker === '') { // +, _
-                                isLastNegative = false;
+                                diffToPush = [];
                                 diffText.setAttribute('data-code-marker', ' ');
                                 if (diffText.firstElementChild) {
                                     diffText.firstElementChild.textContent = diffText.firstElementChild.textContent.slice(1);
